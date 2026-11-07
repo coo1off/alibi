@@ -1,11 +1,14 @@
-/** HUD: рисуется в отдельном канвасе 240×N логических пикселей, масштабируется вместе с полем. */
+/**
+ * HUD: два ряда в логических пикселях шириной 240.
+ * Крупные цифры и кнопки 40×40 — читается на телефоне даже при масштабе 2.
+ */
 import { HUD_W } from "../game/constants";
 import type { Game } from "../game/Game";
-import type { Palette } from "../render/palette";
-import { css } from "../render/palette";
+import { type Palette, css } from "../render/palette";
 import { drawText } from "../ui/text";
 
-export const HUD_LOGICAL_H = 36;
+export const HUD_LOGICAL_H = 64;
+const ROW = 32;
 
 const fmtScore = (n: number) => String(Math.floor(n)).padStart(6, "0");
 
@@ -19,89 +22,110 @@ export class Hud {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, HUD_W, HUD_LOGICAL_H);
 
+    const label = (str: string, x: number, y: number, color = pal.gold) =>
+      drawText(ctx, str, x, y, 10, css(color), "left", "normal", true);
+
     if (game) {
-      // ОЧКИ
-      drawText(ctx, "ОЧКИ", 6, 3, 8, css(pal.gold), "left", "normal", true);
-      drawText(ctx, fmtScore(game.score), 6, 12, 15, css(pal.paper), "left", "bold", true);
+      // ── ряд 1: очки, след, жизни
+      label("ОЧКИ", 6, 2);
+      drawText(ctx, fmtScore(game.score), 6, 11, 18, css(pal.paper), "left", "bold", true);
 
-      // КОМБО
       const mult = game.comboMult;
-      drawText(ctx, "СЛЕД", 100, 3, 8, css(pal.gold), "left", "normal", true);
+      label("СЛЕД", 92, 2);
       const comboColor = mult > 1 ? css(pal.redHi) : css(pal.dim);
-      drawText(ctx, `×${mult}`, 100, 12, 15, comboColor, "left", "bold", true);
+      drawText(ctx, `×${mult}`, 92, 13, 19, comboColor, "left", "bold", true);
       if (comboFlash > 0 && mult > 1) {
-        ctx.fillStyle = css(pal.redHi, comboFlash);
-        ctx.fillRect(96, 6, 60, 24);
-        drawText(ctx, `×${mult}`, 100, 13, 14, css(pal.paper), "left", "bold", false);
+        ctx.fillStyle = css(pal.redHi, Math.min(1, comboFlash));
+        ctx.fillRect(86, 12, 52, 20);
+        drawText(ctx, `×${mult}`, 92, 13, 19, css(pal.paper), "left", "bold", false);
       }
 
-      // ЖИЗНИ
+      label("ЖИЗНИ", 150, 2);
       const lives = Math.max(0, game.lives);
-      drawText(ctx, "ЖИЗНИ", 166, 3, 8, css(pal.gold), "left", "normal", true);
       for (let i = 0; i < lives; i++) {
-        const x = 168 + i * 10;
+        const x = 150 + i * 13;
         ctx.fillStyle = css(pal.red);
-        ctx.fillRect(x, 15, 7, 8);
+        ctx.fillRect(x, 16, 10, 11);
         ctx.fillStyle = css(pal.redHi);
-        ctx.fillRect(x + 1, 16, 2, 2);
+        ctx.fillRect(x + 1, 17, 3, 3);
         ctx.fillStyle = css(pal.ink);
-        ctx.fillRect(x + 5, 16, 1, 1);
-        ctx.fillRect(x + 1, 21, 5, 1);
+        ctx.fillRect(x + 7, 17, 2, 2);
+        ctx.fillRect(x + 2, 24, 6, 1);
       }
 
-      // босс
+      // ── ряд 2: босс
       if (game.bossMaxHp > 0) {
-        drawText(ctx, "ОН", 100, 20, 7, css(pal.red), "left", "normal", true);
-        const hpw = 56;
+        label("ОН", 6, ROW + 5, pal.red);
+        const hpw = 170;
         const hp = Math.max(0, game.bossHp) / game.bossMaxHp;
         ctx.fillStyle = css(pal.panel);
-        ctx.fillRect(114, 22, hpw, 4);
+        ctx.fillRect(24, ROW + 10, hpw, 10);
+        ctx.fillStyle = css(pal.border);
+        ctx.fillRect(24, ROW + 10, hpw, 1);
         ctx.fillStyle = css(pal.red);
-        ctx.fillRect(114, 22, Math.round(hpw * hp), 4);
+        ctx.fillRect(25, ROW + 11, Math.round((hpw - 2) * hp), 8);
+        ctx.fillStyle = css(pal.redHi);
+        ctx.fillRect(25, ROW + 11, Math.round((hpw - 2) * hp), 2);
+        drawText(
+          ctx,
+          `${Math.max(0, game.bossHp)}`,
+          HUD_W - 6,
+          ROW + 4,
+          12,
+          css(pal.redHi),
+          "right",
+          "bold",
+          true,
+        );
       }
     } else {
-      drawText(ctx, "АЛИБИ", 6, 4, 16, css(pal.paper), "left", "bold", true);
-      drawText(ctx, "дело не закрыто", 6, 23, 7, css(pal.dim), "left", "normal", true);
+      drawText(ctx, "АЛИБИ", 6, 6, 22, css(pal.paper), "left", "bold", true);
+      drawText(ctx, "дело не закрыто", 6, 33, 10, css(pal.dim), "left", "normal", true);
     }
 
-    // кнопки: звук и пауза
+    // ── кнопки 40×40 справа (по 2 на ряд)
     this.buttons = [];
-    const bsy = 4;
-    ctx.fillStyle = css(pal.panel);
-    ctx.fillRect(188, bsy, 26, 26);
-    ctx.fillStyle = css(pal.border);
-    ctx.fillRect(188, bsy, 26, 1);
-    ctx.fillStyle = soundOn ? css(pal.gold) : css(pal.muted);
-    // динамик
-    const sy = bsy + 7;
-    ctx.fillRect(194, sy + 7, 3, 5);
-    ctx.fillRect(197, sy + 4, 2, 11);
-    ctx.fillRect(200, sy + 2, 1, 15);
-    if (soundOn) {
-      ctx.fillRect(203, sy + 3, 1, 1);
-      ctx.fillRect(204, sy + 5, 1, 1);
-      ctx.fillRect(205, sy + 7, 1, 5);
-      ctx.fillRect(204, sy + 13, 1, 1);
-      ctx.fillRect(203, sy + 15, 1, 1);
-    } else {
-      ctx.fillRect(203, sy + 6, 1, 1);
-      ctx.fillRect(204, sy + 7, 1, 1);
-      ctx.fillRect(205, sy + 8, 1, 1);
-      ctx.fillRect(204, sy + 9, 1, 1);
-      ctx.fillRect(203, sy + 10, 1, 1);
-      ctx.fillRect(207, sy + 8, 1, 8);
-      ctx.fillRect(206, sy + 9, 1, 6);
-      ctx.fillRect(205, sy + 10, 1, 4);
-    }
-    this.buttons.push({ id: "sound", x: 188, y: bsy, w: 26, h: 26 });
+    const bw = 40;
+    const x0 = HUD_W - bw - 4;
 
     ctx.fillStyle = css(pal.panel);
-    ctx.fillRect(218, bsy, 26, 26);
+    ctx.fillRect(x0, 2, bw, ROW - 4);
     ctx.fillStyle = css(pal.border);
-    ctx.fillRect(218, bsy, 26, 1);
+    ctx.fillRect(x0, 2, bw, 1);
+    ctx.fillStyle = soundOn ? css(pal.goldHi) : css(pal.muted);
+    // динамик
+    const cx = x0 + 12;
+    const cy = 14; // верх айкона
+    ctx.fillRect(cx, cy + 5, 4, 5);
+    ctx.fillRect(cx + 4, cy + 2, 2, 11);
+    ctx.fillRect(cx + 6, cy, 1, 15);
+    if (soundOn) {
+      ctx.fillRect(cx + 10, cy + 4, 1, 1);
+      ctx.fillRect(cx + 11, cy + 5, 1, 1);
+      ctx.fillRect(cx + 12, cy + 6, 1, 3);
+      ctx.fillRect(cx + 11, cy + 9, 1, 1);
+      ctx.fillRect(cx + 10, cy + 10, 1, 1);
+    } else {
+      ctx.fillRect(cx + 9, cy + 5, 1, 1);
+      ctx.fillRect(cx + 10, cy + 6, 1, 1);
+      ctx.fillRect(cx + 11, cy + 7, 1, 1);
+      ctx.fillRect(cx + 10, cy + 8, 1, 1);
+      ctx.fillRect(cx + 9, cy + 9, 1, 1);
+      ctx.fillRect(cx + 13, cy + 5, 1, 1);
+      ctx.fillRect(cx + 14, cy + 6, 1, 1);
+      ctx.fillRect(cx + 15, cy + 7, 1, 1);
+      ctx.fillRect(cx + 14, cy + 8, 1, 1);
+      ctx.fillRect(cx + 13, cy + 9, 1, 1);
+    }
+    this.buttons.push({ id: "sound", x: x0, y: 2, w: bw, h: ROW - 4 });
+
+    ctx.fillStyle = css(pal.panel);
+    ctx.fillRect(x0, ROW + 2, bw, ROW - 4);
+    ctx.fillStyle = css(pal.border);
+    ctx.fillRect(x0, ROW + 2, bw, 1);
     ctx.fillStyle = css(pal.paper);
-    ctx.fillRect(225, bsy + 6, 4, 14);
-    ctx.fillRect(233, bsy + 6, 4, 14);
-    this.buttons.push({ id: "pause", x: 218, y: bsy, w: 26, h: 26 });
+    ctx.fillRect(x0 + 13, ROW + 8, 5, 16);
+    ctx.fillRect(x0 + 23, ROW + 8, 5, 16);
+    this.buttons.push({ id: "pause", x: x0, y: ROW + 2, w: bw, h: ROW - 4 });
   }
 }

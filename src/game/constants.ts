@@ -28,8 +28,8 @@ export const PADDLE_MAX_W = 92;
 export const PADDLE_MIN_W = 28;
 
 /** Мяч. */
-export const BALL_R = 2.6;
-export const BALL_BASE_SPEED = 88;
+export const BALL_R = 3.2;
+export const BALL_BASE_SPEED = 98;
 export const BALL_MAX_SPEED = 150;
 export const BALL_SPEED_STEP = 0.012; // прирост за удар по кирпичу (доля)
 export const BALL_MAX_ANGLE = (62 * Math.PI) / 180;
@@ -54,4 +54,4 @@ export const BOSS_SIZE = 46;
 export const BOSS_Y = BOARD_TOP + 2 * (BRICK_H + BRICK_GAP) + 8;
 
 /** Мобильное управление: нижняя доля экрана — «зона большого пальца». */
-export const TOUCH_ZONE_START = 0.42;
+export const TOUCH_ZONE_START = 0.38;

@@ -109,7 +109,7 @@ export class FieldRenderer {
     this.ctx.fillRect(0, 0, FIELD_W, FIELD_H);
   }
 
-  panel(y: number, h: number, pal: Palette, w = 196): void {
+  panel(y: number, h: number, pal: Palette, w = 214): void {
     const ctx = this.ctx;
     const x = Math.round((FIELD_W - w) / 2);
     ctx.fillStyle = css(pal.ink);
@@ -129,8 +129,8 @@ export class FieldRenderer {
     const out: { id: string; x: number; y: number; w: number; h: number }[] = [];
     let y = startY;
     for (const b of list) {
-      const h = b.primary ? 20 : 16;
-      const w = b.primary ? 168 : 128;
+      const h = b.primary ? 30 : 24;
+      const w = b.primary ? 196 : 160;
       const x = Math.round((FIELD_W - w) / 2);
       const edge = b.primary ? pal.gold : b.dark ? pal.border : pal.borderHi;
       ctx.fillStyle = css(b.primary ? pal.goldLo : pal.panel);
@@ -148,8 +148,8 @@ export class FieldRenderer {
         ctx,
         b.label,
         FIELD_W / 2,
-        y + (h - (b.primary ? 10 : 8)) / 2,
-        b.primary ? 10 : 8,
+        y + (h - (b.primary ? 13 : 11)) / 2,
+        b.primary ? 13 : 11,
         b.primary ? css(pal.paper) : css(pal.dim),
         "center",
       );

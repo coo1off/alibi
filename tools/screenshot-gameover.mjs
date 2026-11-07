@@ -16,7 +16,7 @@ for (let life = 0; life < 3; life++) {
   await page.waitForTimeout(7000);
   await page.screenshot({ path: `.shots/g-life${life}.png` });
 }
-await page.waitForTimeout(400);
+await page.waitForTimeout(2500);
 await page.screenshot({ path: ".shots/9-gameover.png" });
 console.log(errors.length ? errors.join("\n") : "no errors");
 await browser.close();

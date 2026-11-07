@@ -134,8 +134,11 @@ class App {
       const r = this.canvases.hud.getBoundingClientRect();
       const lx = ((e.clientX - r.left) / Math.max(1, r.width)) * HUD_W;
       const ly = ((e.clientY - r.top) / Math.max(1, r.height)) * HUD_LOGICAL_H;
-      if (this.hud.buttons.some((b) => b.id === "pause" && lx >= b.x && ly >= b.y - 4 && ly <= b.y + b.h + 4)) this.togglePause();
-      else if (this.hud.buttons.some((b) => b.id === "sound" && lx >= b.x && ly >= b.y - 4 && ly <= b.y + b.h + 4)) this.toggleSound();
+      const hit = this.hud.buttons.find(
+        (b) => lx >= b.x - 3 && lx <= b.x + b.w + 3 && ly >= b.y - 3 && ly <= b.y + b.h + 3,
+      );
+      if (hit?.id === "pause") this.togglePause();
+      else if (hit?.id === "sound") this.toggleSound();
     });
   }
 
@@ -402,11 +405,11 @@ class App {
       else if (this.mode === "gameover") hits = drawGameOver(fr, pal, this.game, this.save.bestScore).hits;
       else if (this.mode === "victory") hits = drawVictory(fr, pal, this.game, this.t).hits;
       if (this.mode === "game" && this.game.phase === "ready") {
-        ctx.fillStyle = "rgba(232,224,208,0.75)";
-        ctx.font = 'normal 7px "Courier New", monospace';
+        ctx.fillStyle = "rgba(232,224,208,0.9)";
+        ctx.font = 'bold 10px "Courier New", monospace';
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.fillText("ТАП — ЗАПУСТИТЬ МЯЧ", FIELD_W / 2, FIELD_H * 0.62);
+        ctx.fillText("ТАП — ЗАПУСТИТЬ МЯЧ", FIELD_W / 2, FIELD_H * 0.6);
       }
     }
     this.hits = hits;
