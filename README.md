@@ -58,9 +58,10 @@ npm run deploy        # = tools/deploy-pages.sh: build → push ветки gh-pa
 
 `base: './'` в [vite.config.ts](vite.config.ts) — ассеты работают и в подпапке, и на корне домена.
 
-> Альтернатива — CI-деплой из `.github/workflows/deploy.yml` (запускается автоматически при push в `main`).
-> Для первого push этого файла у токена `gh` нужен scope `workflow`:
-> `gh auth refresh -s workflow`, затем `git push`. Пока файл не запушен, используйте `npm run deploy`.
+> **CI-автодеплой** (необязательно): для автоматической публикации при каждом push в `main`
+> расширьте права токена — `gh auth refresh -s workflow`, затем добавьте файл workflow в
+> `.github/workflows/deploy.yml` (шаги: `npm ci`, `npm test`, `npm run build`, `actions/deploy-pages`)
+> и переключите Pages на источник **GitHub Actions**.
 
 ## Структура
 
