@@ -16,5 +16,10 @@ git add -A
 git -c user.name="alibi-deploy" -c user.email="deploy@local" commit -q -m "deploy: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ORIGIN=$(git -C "$OLDPWD" remote get-url origin 2>/dev/null || echo "https://github.com/coo1off/alibi.git")
 git remote add origin "$ORIGIN"
-git push -f origin gh-pages
+# авторизация: если в системе нет сохранённых кредов — берём токен GitHub CLI
+if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+  git -c credential.helper='!gh auth git-credential' push -f origin gh-pages
+else
+  git push -f origin gh-pages
+fi
 echo "Опубликовано. Через минуту: https://coo1off.github.io/alibi/"
