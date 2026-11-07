@@ -45,12 +45,22 @@ npm run levels   # валидатор levels.json
 
 ## Публикация на GitHub Pages
 
-1. Создайте репозиторий на GitHub и запушьте ветку `main`.
-2. **Settings → Pages → Source: GitHub Actions**.
-3. Workflow [.github/workflows/deploy.yml](.github/workflows/deploy.yml) сам соберёт, прогонит тесты и опубликует `dist/`.
-4. Через 1–2 минуты игра будет по адресу `https://<логин>.github.io/<репозиторий>/`.
+Игра опубликована: **https://coo1off.github.io/alibi/**
+
+Схема: `main` — исходники; ветка **`gh-pages`** — собранный сайт; в настройках репозитория
+**Settings → Pages → Source: Deploy from a branch → `gh-pages` /(root)**.
+
+Обновить сайт после изменений:
+
+```bash
+npm run deploy        # = tools/deploy-pages.sh: build → push ветки gh-pages
+```
 
 `base: './'` в [vite.config.ts](vite.config.ts) — ассеты работают и в подпапке, и на корне домена.
+
+> Альтернатива — CI-деплой из `.github/workflows/deploy.yml` (запускается автоматически при push в `main`).
+> Для первого push этого файла у токена `gh` нужен scope `workflow`:
+> `gh auth refresh -s workflow`, затем `git push`. Пока файл не запушен, используйте `npm run deploy`.
 
 ## Структура
 
